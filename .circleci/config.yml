@@ -13,7 +13,7 @@ docker_setup: &docker_setup
       docker info
       docker login -u $DOCKER_USER -p $DOCKER_PASS
 jobs:
-  deploy:
+  deploy_version:
     <<: *defaults
     steps:
       - checkout
@@ -34,9 +34,9 @@ jobs:
 
 workflows:
   version: 2
-  tagged-build:
+  deploy:
     jobs:
-      - deploy:
+      - deploy_version:
           filters:
             tags:
               only: /.*/
