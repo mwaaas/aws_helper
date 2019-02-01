@@ -35,6 +35,19 @@ func sqsSendMessage(res http.ResponseWriter, req *http.Request) {
 		SharedConfigState: session.SharedConfigEnable,
 	}))
 
+	endpoint := &sess.Config.Endpoint
+
+	if reqEndPoint, ok := reqBody["endpoint"]; ok {
+		if reqEndPointStr, ok := reqEndPoint.(string); ok {
+			if reqEndPoint != "" {
+				*endpoint = aws.String(reqEndPointStr)
+			}
+		} else {
+			panic("endpoint should be string")
+		}
+
+	}
+
 	svc := sns.New(sess)
 
 	// if message structure is in json we convert message to json
