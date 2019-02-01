@@ -15,7 +15,7 @@ import (
 // New returns a new router
 func NewRouter() http.Handler {
 	r := mux.NewRouter()
-	r.HandleFunc("/sqs_send_message", sqsSendMessage)
+	r.HandleFunc("/sns/send_message", sqsSendMessage)
 	return r
 }
 

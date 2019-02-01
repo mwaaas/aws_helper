@@ -5,13 +5,13 @@
 # * 'ptr' and 'ptrp' create a POST request with a simple or parameter-like body;
 # * 'mptr' and 'fptr' create a POST request to submit a form with a text or file field (multipart/form-data);
 
-POST http://localhost:8093/sqs_send_message
+POST http://localhost:8093/sns/send_message
 Content-Type: application/json
 
 {"message": {
   "name": "aws_sns_helper"
 },
-  "TopicArn": "arn:aws:sns:eu-west-1:309952364818:disburse_topic",
+  "TopicArn": "arn:aws:sns:eu-west-1:xxxxxx:disburse_topic",
   "MessageStructure": "json",
   "endpoint": "http://localhost:4100"
 }

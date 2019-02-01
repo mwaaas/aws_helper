@@ -8,8 +8,6 @@ services:
     volumes:
       - ./:/usr/src/app
       - $HOME/.aws:/root/.aws
-    environment:
-      - Port=80
     ports:
       - 8092:80
 
@@ -19,8 +17,6 @@ services:
       dockerfile: Dockerfile
     volumes:
       - $HOME/.aws:/root/.aws
-    environment:
-      - Port=80
     ports:
-      - 8080:80
+      - 8093:80
 
