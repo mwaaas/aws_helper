@@ -1,0 +1,49 @@
+version: 2
+
+defaults: &defaults
+  machine:
+    image: circleci/classic:201708-01
+
+  working_directory: ~/aws_helper
+
+docker_setup: &docker_setup
+  run:
+    name: docker setup
+    command: |
+      docker info
+      docker login -u $DOCKER_USER -p $DOCKER_PASS
+jobs:
+  deploy:
+    <<: *defaults
+    steps:
+      - checkout
+      - *docker_setup
+      - run:
+          name: Deploy image to hub
+          command: make deploy version=$CIRCLE_TAG
+
+  deploy_latest:
+    <<: *defaults
+    steps:
+      - checkout
+      - *docker_setup
+      - run:
+          name: Deploy image to hub
+          command: make deploy version=latest
+
+
+workflows:
+  version: 2
+  tagged-build:
+    jobs:
+      - deploy:
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              ignore: /.*/
+      - deploy_latest:
+          filters:
+            branches:
+              only:
+                - master
