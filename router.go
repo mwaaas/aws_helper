@@ -52,17 +52,15 @@ func sqsSendMessage(res http.ResponseWriter, req *http.Request) {
 
 	// if message structure is in json we convert message to json
 	if value, ok := reqBody["MessageStructure"]; ok {
-		if value == "json" {
-			message := reqBody["message"]
-			if messageMap, ok := message.(map[string]interface{}); ok {
+		message := reqBody["message"]
+		if messageMap, ok := message.(map[string]interface{}); ok {
+			if value == "json" {
 				if _, ok := messageMap["default"]; !ok {
 					messageMap["default"] = "default was not set"
 				}
-				messageBytes, _ := json.Marshal(messageMap)
-				reqBody["message"] = aws.String(string(messageBytes))
-			} else {
-				panic("message should be json")
 			}
+			messageBytes, _ := json.Marshal(messageMap)
+			reqBody["message"] = aws.String(string(messageBytes))
 		}
 	}
 	publishInput := &sns.PublishInput{}
