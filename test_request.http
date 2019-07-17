@@ -5,15 +5,31 @@
 # * 'ptr' and 'ptrp' create a POST request with a simple or parameter-like body;
 # * 'mptr' and 'fptr' create a POST request to submit a form with a text or file field (multipart/form-data);
 
-POST http://localhost:8093/sns/send_message
+POST http://localhost:8095/sqs/send_message
 Content-Type: application/json
 
 {"message": {
-  "name": "aws_sns_helper"
+  "header": {"timestamp": "2018-11-08T06:33:01+00:00", "messageId": "fbb42f2c-1901-4f13-b669-4cb91ebefd6e"},
+  "occured_at":"2018-11-08T06:33:01+00:00",
+  "created_at":"2018-11-08T06:33:01+00:00",
+  "loan_id": "45811026",
+  "loan_status":"disbursed",
+  "loan_number": "7",
+  "loan_duration": "7",
+  "msisdn":"255900002223",
+  "amount":"20000",
+  "initial_due_date":"2018-11-15T06:33:01Z",
+  "partnerCode":"airtel_tz",
+  "productCode":"airtel-tz-access",
+  "productType":"access",
+  "customerType":"consumer",
+  "provider":"jumo-tz",
+  "balance":"2288000"
 },
-  "TopicArn": "arn:aws:sns:eu-west-1:xxxxxx:disburse_topic",
-  "MessageStructure": "json",
-  "endpoint": "http://localhost:4100"
+  "TopicArn": "arn:aws:sns:eu-west-1:123456789012:dev-churn-written-off-topic",
+  "MessageStructure": "raw",
+  "QueueUrl": "http://localhost:4576/queue/dev_ncs_sqsqueues_churnWrittenOff_v1",
+  "endpoint": "http://localhost:4576"
 }
 
 ###

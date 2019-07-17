@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sns"
+	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/gorilla/mux"
 	"github.com/mitchellh/mapstructure"
 	log "github.com/sirupsen/logrus"
@@ -15,8 +16,27 @@ import (
 // New returns a new router
 func NewRouter() http.Handler {
 	r := mux.NewRouter()
-	r.HandleFunc("/sns/send_message", sqsSendMessage)
+	r.HandleFunc("/sns/send_message", snsSendMessage)
+	r.HandleFunc("/sqs/send_message", sqsSendMessage)
 	return r
+}
+
+
+func getAwsSession(endpoint string)  *session.Session {
+	sess := session.Must(session.NewSessionWithOptions(session.Options{
+		SharedConfigState: session.SharedConfigEnable,
+	}))
+
+
+
+	awsEndpoint := &sess.Config.Endpoint
+
+	if endpoint != "" {
+		*awsEndpoint = aws.String(endpoint)
+	}
+
+
+	return sess
 }
 
 func sqsSendMessage(res http.ResponseWriter, req *http.Request) {
@@ -30,25 +50,71 @@ func sqsSendMessage(res http.ResponseWriter, req *http.Request) {
 		})
 
 	contextLogger.Info("Handling URL request")
+	svc := sqs.New(getAwsSession(reqBody["endpoint"].(string)))
 
-	sess := session.Must(session.NewSessionWithOptions(session.Options{
-		SharedConfigState: session.SharedConfigEnable,
-	}))
-
-	endpoint := &sess.Config.Endpoint
-
-	if reqEndPoint, ok := reqBody["endpoint"]; ok {
-		if reqEndPointStr, ok := reqEndPoint.(string); ok {
-			if reqEndPoint != "" {
-				*endpoint = aws.String(reqEndPointStr)
-			}
-		} else {
-			panic("endpoint should be string")
+	messageBody := reqBody["message"]
+	messageBytes, err := json.Marshal(messageBody)
+	if err != nil {
+		fmt.Println(err.Error())
+		res.WriteHeader(http.StatusBadRequest)
+		_, err := res.Write([]byte(err.Error()))
+		if err != nil {
+			panic(err)
 		}
-
+		return
 	}
 
-	svc := sns.New(sess)
+	reqBody["MessageBody"] = aws.String(string(messageBytes))
+
+	messageParam := &sqs.SendMessageInput{}
+
+	err = mapstructure.Decode(reqBody, messageParam)
+
+	if err != nil {
+		fmt.Println(err.Error())
+		res.WriteHeader(http.StatusBadRequest)
+		_, err := res.Write([]byte(err.Error()))
+		if err != nil {
+			panic(err)
+		}
+		return
+	}
+
+	resp, err := svc.SendMessage(messageParam)
+
+	if err != nil {
+		fmt.Println(err.Error())
+		res.WriteHeader(http.StatusBadRequest)
+		_, err := res.Write([]byte(err.Error()))
+
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		res.WriteHeader(http.StatusOK)
+		_, err := res.Write([]byte(resp.GoString()))
+
+		if err != nil {
+			panic(err)
+		}
+	}
+	return
+}
+
+func snsSendMessage(res http.ResponseWriter, req *http.Request) {
+	method := req.URL.Query().Get("method")
+	reqBody, _ := parseRequestBodyAsMap(req)
+	contextLogger := log.WithFields(
+		log.Fields{
+			"url":          req.URL,
+			"method":       method,
+			"request_body": reqBody,
+		})
+
+	contextLogger.Info("Handling URL request")
+
+
+	svc := sns.New(getAwsSession(reqBody["endpoint"].(string)))
 
 	// if message structure is in json we convert message to json
 	if value, ok := reqBody["MessageStructure"]; ok {
