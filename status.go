@@ -10,7 +10,7 @@ func status(r *mux.Router) {
 	health.Register(health.Config{
 		Name:      "server",
 		Timeout:   time.Second * 5,
-		SkipOnErr: true,
+		SkipOnErr: false,
 		Check: func() error {
 			// rabbitmq health check implementation goes here
 			return nil
