@@ -18,23 +18,23 @@ func NewRouter() http.Handler {
 	r := mux.NewRouter()
 	r.HandleFunc("/sns/send_message", snsSendMessage)
 	r.HandleFunc("/sqs/send_message", sqsSendMessage)
+
+	// add status url
+	status(r)
+
 	return r
 }
 
-
-func getAwsSession(endpoint string)  *session.Session {
+func getAwsSession(endpoint string) *session.Session {
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
 	}))
-
-
 
 	awsEndpoint := &sess.Config.Endpoint
 
 	if endpoint != "" {
 		*awsEndpoint = aws.String(endpoint)
 	}
-
 
 	return sess
 }
@@ -112,7 +112,6 @@ func snsSendMessage(res http.ResponseWriter, req *http.Request) {
 		})
 
 	contextLogger.Info("Handling URL request")
-
 
 	svc := sns.New(getAwsSession(reqBody["endpoint"].(string)))
 
