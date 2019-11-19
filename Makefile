@@ -1,7 +1,14 @@
 version=latest
-image=mwaaas/aws_helper
+image=mwaaas/sqs_go_demo
 
+cache_dir=.cache
+cache_from := $(shell [ -f $(cache_dir)/index.json ] && echo "--cache-from=type=local,src=$(cache_dir)" || echo )
 
-deploy:
-	docker build -t $(image):$(version) .
+build:
+	docker buildx build $(cache_from) --cache-to=type=local,dest=$(cache_dir) --output=type=docker,name=aws_helper_app .
+
+push_image:
+	docker tag sqs_demo_sqs_demo $(image):$(version)
 	docker push $(image):$(version)
+
+deploy: build push_image
